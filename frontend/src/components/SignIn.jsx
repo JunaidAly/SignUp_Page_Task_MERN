@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthLayout from './AuthLayout.jsx';
+import IconInput from './IconInput.jsx';
+import { MailIcon, LockIcon } from './icons.jsx';
 
 const API_URL = 'http://localhost:5000/api/auth';
 
 function SignIn() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,8 +23,8 @@ function SignIn() {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/signin`, form);
-      setMessage({ type: 'success', text: res.data.message });
       localStorage.setItem('token', res.data.token);
+      navigate('/dashboard');
     } catch (err) {
       setMessage({
         type: 'error',
@@ -31,54 +36,63 @@ function SignIn() {
   };
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      {message && (
-        <div
-          className={`p-2 rounded text-sm ${
-            message.type === 'success'
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
+    <AuthLayout
+      subtitle="Welcome back"
+      footer={
+        <>
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-blue-600 font-semibold hover:underline">
+            Sign Up
+          </Link>
+        </>
+      }
+    >
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {message && (
+          <div className="p-2 rounded text-sm bg-red-100 text-red-700">
+            {message.text}
+          </div>
+        )}
 
-      <div>
-        <input
+        <IconInput
+          icon={<MailIcon />}
           type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
-          className="w-full px-3 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Email"
           required
         />
-      </div>
 
-      <div>
-        <input
+        <IconInput
+          icon={<LockIcon />}
           type="password"
           name="password"
           value={form.password}
           onChange={handleChange}
-          className="w-full px-3 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Password"
           required
         />
-      </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-3 rounded-full hover:bg-blue-700 transition disabled:opacity-60"
-      >
-        {loading ? 'Signing in...' : 'Sign In'}
-      </button>
-    </form>
+        <div className="text-right -mt-1">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-3 rounded-full font-medium hover:bg-blue-700 hover:shadow-lg transition disabled:opacity-60"
+        >
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }
 
 export default SignIn;
-
-
